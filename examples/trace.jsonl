@@ -1,0 +1,3 @@
+{"timestamp":"2026-11-02T12:36:00Z","action":"read_messages","status":"ok","latency_ms":0.18,"source":"fixture","limit":5,"messages":5,"chars":295}
+{"timestamp":"2026-11-02T12:36:00Z","action":"extract_tasks","status":"ok","latency_ms":0.22,"extractor":"rules-v1","tasks":3,"schema_valid":true,"tokens_input":0,"tokens_output":0,"cost_usd":0.0}
+

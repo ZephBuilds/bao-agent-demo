@@ -1,0 +1,9 @@
+.env
+.venv/
+.deps/
+.learnings/
+__pycache__/
+.pytest_cache/
+*.pyc
+logs/*.jsonl
+output/*.json

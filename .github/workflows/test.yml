@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: python3 scripts/security_check.py
+      - name: Audit runtime dependencies
+        run: pip-audit --requirement requirements.txt --strict
+      - run: docker build -t bao-agent-demo .
+      - name: Smoke test container
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_name="bao-agent-demo-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          trap 'docker rm -f "$container_name" >/dev/null 2>&1 || true' EXIT
+
+          docker run -d --network none --name "$container_name" bao-agent-demo
+
+          healthy=false
+          for _ in {1..30}; do
+            response="$(docker exec "$container_name" python -c '
+          from urllib.request import urlopen
+          print(urlopen("http://127.0.0.1:8000/health").read().decode(), end="")
+          ' 2>/dev/null)" || true
+            if [ "$response" = '{"status":"ok"}' ]; then
+              healthy=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$healthy" != true ]; then
+            docker logs "$container_name"
+            exit 1
+          fi
+      - run: pytest
