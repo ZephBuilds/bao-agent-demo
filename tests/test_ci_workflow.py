@@ -67,7 +67,7 @@ def test_container_smoke_gate_runs_once_between_build_and_pytest() -> None:
     security_step = "- run: python3 scripts/security_check.py"
     docker_build_step = "- run: docker build -t bao-agent-demo ."
     smoke_step = "- name: Smoke test container"
-    pytest_step = "- run: pytest"
+    pytest_step = "- run: python3 -m pytest"
 
     assert steps.count(security_step) == 1
     assert steps.count(docker_build_step) == 1
@@ -82,7 +82,7 @@ def test_container_smoke_gate_runs_once_between_build_and_pytest() -> None:
 
     smoke_block = workflow[
         workflow.index("      - name: Smoke test container") : workflow.index(
-            "      - run: pytest"
+            "      - run: python3 -m pytest"
         )
     ]
     container_name = 'container_name="bao-agent-demo-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"'
